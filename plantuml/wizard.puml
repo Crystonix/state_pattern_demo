@@ -1,0 +1,63 @@
+@startuml WizardPattern
+
+' ----------------------------
+' Define colors via stereotypes
+' ----------------------------
+skinparam class {
+  BackgroundColor<<Context>> LightBlue
+  BackgroundColor<<Abstract>> LightGreen
+  BackgroundColor<<State>> LightYellow
+  BackgroundColor<<Interface>> LightGray
+}
+
+' ----------------------------
+' Interface and Abstract States
+' ----------------------------
+interface WizardState<T> <<Interface>> {
+  +data: T
+  +next(context: WizardStore)
+  +prev(context: WizardStore)
+  +display(): string
+}
+
+abstract class BaseWizardState<T> <<Abstract>> {
+  -_data: T
+  +context: WizardStore
+  +data: T
+  +next()
+  +prev()
+  +display(): string
+}
+
+' ----------------------------
+' Concrete States
+' ----------------------------
+class UserInfoState <<State>>
+class PreferencesState <<State>>
+class ReviewState <<State>>
+
+' ----------------------------
+' Context
+' ----------------------------
+class WizardStore <<Context>> {
+  +steps: WizardState[]
+  +currentIndex: int
+  +currentState: WizardState
+  +currentData: unknown
+  +next()
+  +prev()
+  +getAllData()
+}
+
+' ----------------------------
+' Relationships
+' ----------------------------
+WizardState <|.. BaseWizardState
+BaseWizardState <|.. UserInfoState
+BaseWizardState <|.. PreferencesState
+BaseWizardState <|.. ReviewState
+
+BaseWizardState --> WizardStore : context
+WizardStore --> WizardState : steps
+
+@enduml
