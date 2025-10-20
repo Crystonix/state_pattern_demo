@@ -1,7 +1,7 @@
 export interface WizardState<T = unknown> {
   data?: T;
-  next(context: WizardStore): void;
-  prev(context: WizardStore): void;
+  next(): void;
+  prev(): void;
   display(): string;
 }
 
@@ -33,10 +33,33 @@ export class UserInfoState extends BaseWizardState<{ name: string; email: string
     super(context, { name: '', email: '' });
   }
 
-  next() {this.context.next()}
-  prev() {this.context.prev()}
-  display() { return 'User Info Step' }
+  next() {
+    // Simple validation
+    if (!this.data.name.trim() || !this.data.email.trim()) {
+      console.warn('Please fill in both name and email before proceeding.');
+      return; // prevent moving to next state
+    }
+
+    // Optional: simple email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.data.email)) {
+      console.warn('Please enter a valid email address.');
+      return;
+    }
+
+    // If validation passes, move to next state
+    this.context.next();
+  }
+
+  prev() {
+    this.context.prev();
+  }
+
+  display() {
+    return 'User Info Step';
+  }
 }
+
 
 
 export class PreferencesState extends BaseWizardState<{ theme: string; notifications: boolean; newsletter: boolean }> {
@@ -44,10 +67,60 @@ export class PreferencesState extends BaseWizardState<{ theme: string; notificat
     super(context, { theme: 'light', notifications: true, newsletter: false });
   }
 
-  next() {this.context.next()}
-  prev() {this.context.prev()}
-  display() {return 'Preferences Step'}
+  next() {
+    // Example: only go to NewsletterStep if newsletter is true
+    if (this.data.newsletter) {
+      // Insert a hypothetical NewsletterState dynamically
+      const newsletterStepIndex = this.context.steps.findIndex(
+        step => step instanceof NewsletterState
+      );
+      if (newsletterStepIndex === -1) {
+        // Dynamically add the step if it doesn’t exist
+        this.context.steps.splice(this.context.currentIndex + 1, 0, new NewsletterState(this.context));
+      }
+    } else {
+      // If newsletter not selected, skip the newsletter step if it exists
+      const newsletterStepIndex = this.context.steps.findIndex(
+        step => step instanceof NewsletterState
+      );
+      if (newsletterStepIndex > -1) {
+        this.context.steps.splice(newsletterStepIndex, 1);
+      }
+    }
+
+    // Move to the next step
+    this.context.next();
+  }
+
+  prev() {
+    this.context.prev();
+  }
+
+  display() {
+    return 'Preferences Step';
+  }
 }
+
+export class NewsletterState extends BaseWizardState<{ frequency: string }> {
+  constructor(context: WizardStore) {
+    super(context, { frequency: 'weekly' }); // default frequency
+  }
+
+  next() {
+    // Move to the next step (ReviewState)
+    this.context.next();
+  }
+
+  prev() {
+    this.context.prev();
+  }
+
+  display() {
+    return 'Newsletter Preferences';
+  }
+}
+
+
 
 
 export class ReviewState extends BaseWizardState<null> {
@@ -87,6 +160,14 @@ class WizardStore {
 
   prev() {
     if (this.currentIndex > 0) this.currentIndex -= 1;
+  }
+
+  get isFirstStep() {
+    return this.currentIndex === 0;
+  }
+
+  get isLastStep() {
+    return this.currentIndex === this.steps.length - 1;
   }
 
 	getAllData() {

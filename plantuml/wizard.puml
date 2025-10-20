@@ -1,8 +1,6 @@
 @startuml WizardPattern
+left to right direction
 
-' ----------------------------
-' Define colors via stereotypes
-' ----------------------------
 skinparam class {
   BackgroundColor<<Context>> LightBlue
   BackgroundColor<<Abstract>> LightGreen
@@ -10,54 +8,30 @@ skinparam class {
   BackgroundColor<<Interface>> LightGray
 }
 
-' ----------------------------
-' Interface and Abstract States
-' ----------------------------
-interface WizardState<T> <<Interface>> {
-  +data: T
-  +next(context: WizardStore)
-  +prev(context: WizardStore)
-  +display(): string
-}
+interface WizardState<T> <<Interface>>
+abstract class BaseWizardState<T> <<Abstract>>
 
-abstract class BaseWizardState<T> <<Abstract>> {
-  -_data: T
-  +context: WizardStore
-  +data: T
-  +next()
-  +prev()
-  +display(): string
-}
-
-' ----------------------------
-' Concrete States
-' ----------------------------
 class UserInfoState <<State>>
 class PreferencesState <<State>>
+class NewsletterState <<State>>
 class ReviewState <<State>>
 
-' ----------------------------
-' Context
-' ----------------------------
-class WizardStore <<Context>> {
-  +steps: WizardState[]
-  +currentIndex: int
-  +currentState: WizardState
-  +currentData: unknown
-  +next()
-  +prev()
-  +getAllData()
-}
+class WizardStore <<Context>>
 
-' ----------------------------
-' Relationships
-' ----------------------------
+' Inheritance
 WizardState <|.. BaseWizardState
 BaseWizardState <|.. UserInfoState
 BaseWizardState <|.. PreferencesState
+BaseWizardState <|.. NewsletterState
 BaseWizardState <|.. ReviewState
 
+' Relationships
 BaseWizardState --> WizardStore : context
 WizardStore --> WizardState : steps
+
+' Optional Newsletter flow
+UserInfoState -right->PreferencesState
+PreferencesState -right-> NewsletterState : optional
+NewsletterState -right-> ReviewState
 
 @enduml

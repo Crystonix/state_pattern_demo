@@ -1,0 +1,113 @@
+@startuml WizardPatternDetailed
+' Force left-to-right layout
+left to right direction
+
+' ----------------------------
+' Define colors via stereotypes
+' ----------------------------
+skinparam class {
+  BackgroundColor<<Context>> LightBlue
+  BackgroundColor<<Abstract>> LightGreen
+  BackgroundColor<<State>> LightYellow
+  BackgroundColor<<Interface>> LightGray
+}
+
+' ----------------------------
+' Interface and Abstract State
+' ----------------------------
+interface WizardState<T> <<Interface>> {
+  +data: T
+  +next()
+  +prev()
+  +display(): string
+}
+
+abstract class BaseWizardState<T> <<Abstract>> {
+  -_data: T
+  +context: WizardStore
+  +data: T
+  +next()
+  +prev()
+  +display(): string
+}
+
+' ----------------------------
+' Concrete States
+' ----------------------------
+class UserInfoState <<State>> {
+  +data: { name: string; email: string }
+  +next()
+  +prev()
+  +display(): string
+}
+
+class PreferencesState <<State>> {
+  +data: { theme: string; notifications: boolean; newsletter: boolean }
+  +next()
+  +prev()
+  +display(): string
+}
+
+class NewsletterState <<State>> {
+  +data: { frequency: string }
+  +next()
+  +prev()
+  +display(): string
+}
+
+class ReviewState <<State>> {
+  +data: null
+  +next()
+  +prev()
+  +display(): string
+}
+
+' ----------------------------
+' Context
+' ----------------------------
+class WizardStore <<Context>> {
+  +steps: WizardState[]
+  +currentIndex: int
+  +currentState: WizardState
+  +currentData: unknown
+  +isFirstStep(): boolean
+  +isLastStep(): boolean
+  +next()
+  +prev()
+  +getAllData(): Record<string, unknown>
+}
+
+' ----------------------------
+' Inheritance
+' ----------------------------
+WizardState <|.. BaseWizardState
+BaseWizardState <|.. UserInfoState
+BaseWizardState <|.. PreferencesState
+BaseWizardState <|.. NewsletterState
+BaseWizardState <|.. ReviewState
+
+' ----------------------------
+' Associations
+' ----------------------------
+BaseWizardState --> WizardStore : context
+WizardStore --> WizardState : steps
+
+' ----------------------------
+' Optional Newsletter Flow
+' ----------------------------
+PreferencesState -right-> NewsletterState : optional
+NewsletterState -right-> ReviewState
+
+' ----------------------------
+' Optional: notes for clarity
+' ----------------------------
+note left of PreferencesState
+  Dynamically inserts NewsletterState if
+  newsletter = true
+end note
+
+note right of NewsletterState
+  Only appears if user opts in
+end note
+
+@enduml
