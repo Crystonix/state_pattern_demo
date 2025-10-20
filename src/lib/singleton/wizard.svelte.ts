@@ -18,7 +18,7 @@ export abstract class BaseWizardState<T> implements WizardState<T> {
 
   set data(value: T) {
     this._data = value;
-    this.context.setCurrentData(this._data); // auto-save
+    this.context.currentData = this._data; // auto-save via setter
     console.log(`[${this.constructor.name}] Data updated`, this._data);
   }
 
@@ -33,36 +33,20 @@ export class UserInfoState extends BaseWizardState<{ name: string; email: string
     super(context, { name: '', email: '' });
   }
 
-  next() {
-    this.context.currentState = this.context.preferencesState;
-  }
-
-  prev() {
-    console.log('[UserInfoState.prev] Already first step');
-  }
-
-  display() {
-    return 'User Info Step';
-  }
+  next() {this.context.next()}
+  prev() {this.context.prev()}
+  display() { return 'User Info Step' }
 }
 
 
-export class PreferencesState extends BaseWizardState<{ theme: string; notifications: boolean }> {
+export class PreferencesState extends BaseWizardState<{ theme: string; notifications: boolean; newsletter: boolean }> {
   constructor(context: WizardStore) {
-    super(context, { theme: 'light', notifications: true });
+    super(context, { theme: 'light', notifications: true, newsletter: false });
   }
 
-  next() {
-    this.context.currentState = this.context.reviewState;
-  }
-
-  prev() {
-    this.context.currentState = this.context.userInfoState;
-  }
-
-  display() {
-    return 'Preferences Step';
-  }
+  next() {this.context.next()}
+  prev() {this.context.prev()}
+  display() {return 'Preferences Step'}
 }
 
 
@@ -71,47 +55,52 @@ export class ReviewState extends BaseWizardState<null> {
     super(context, null);
   }
 
-  next() {
-    console.log('[ReviewState.next] Wizard complete!');
+  next() {this.context.next()}
+  prev() {this.context.prev()}
+  display() {return 'Review Step'}
+}
+
+class WizardStore {
+  steps = $state<WizardState[]>([]);
+	currentIndex = $state(0);
+
+	constructor(stepClasses: (new (context: WizardStore) => WizardState) []) {
+		this.steps = stepClasses.map(StepClass => new StepClass(this));
+	}
+  get currentState() {
+		return this.steps[this.currentIndex]
+	}
+
+  set currentState(state: WizardState) {
+    const index = this.steps.indexOf(state);
+    if (index !== -1) this.currentIndex = index;
+    else console.warn('[WizardStore] Tried to set unknown state');
+  }
+
+  set currentData(data: unknown) {
+    this.steps[this.currentIndex].data = data;
+  }
+
+	next() {
+    if (this.currentIndex < this.steps.length - 1) this.currentIndex += 1;
   }
 
   prev() {
-    this.context.currentState = this.context.preferencesState;
+    if (this.currentIndex > 0) this.currentIndex -= 1;
   }
 
-  display() {
-    return 'Review Step';
-  }
+	getAllData() {
+		return this.steps.reduce((acc, step) => {
+			if (step.data && typeof step.data === 'object') {
+				return { ...acc, ...step.data };
+			}
+			return acc;
+		}, {} as Record<string, unknown>);
+	}
 }
 
-export class WizardStore {
-  userInfoState = new UserInfoState(this);
-  preferencesState = new PreferencesState(this);
-  reviewState = new ReviewState(this);
-
-  currentState = $state<WizardState>(this.userInfoState);
-
-  next() {
-    this.currentState.next(this);
-  }
-
-  prev() {
-    this.currentState.prev(this);
-  }
-
-  display() {
-    return this.currentState.display();
-  }
-
-  getCurrentData<T>() {
-    console.log('[WizardStore.getCurrentData]', this.currentState.display(), this.currentState.data);
-    return this.currentState.data as T | undefined;
-  }
-
-  setCurrentData<T>(data: T) {
-    console.log('[WizardStore.setCurrentData]', this.currentState.display(), data);
-    this.currentState.data = { ...data } as T;
-  }
-}
-
-export const wizard = new WizardStore();
+export const wizard = new WizardStore([
+		UserInfoState,
+		PreferencesState,
+		ReviewState,
+]);

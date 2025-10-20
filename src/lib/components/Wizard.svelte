@@ -7,17 +7,36 @@
 
   // Map state constructors to components
   const stepComponents = new Map();
-  stepComponents.set(wizard.userInfoState.constructor, UserInfoStep);
-  stepComponents.set(wizard.preferencesState.constructor, PreferencesStep);
-  stepComponents.set(wizard.reviewState.constructor, ReviewStep);
+  stepComponents.set('UserInfoState', UserInfoStep);
+  stepComponents.set('PreferencesState', PreferencesStep);
+  stepComponents.set('ReviewState', ReviewStep);
 
   $inspect(wizard.currentState);
-  let CurrentComponent = $derived(stepComponents.get(wizard.currentState?.constructor));
+  let CurrentComponent = $derived(stepComponents.get(wizard.currentState?.constructor.name));
 </script>
 
-{#if CurrentComponent}
-  <CurrentComponent state={wizard} />
-{/if}
+<div class="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-10">
+  {#if CurrentComponent}
+   <div class="w-full max-w-sm p-6 bg-white shadow-lg rounded-lg">
+      <CurrentComponent state={wizard.currentState} />
 
-<button onclick={() => wizard.prev()}>Prev</button>
-<button onclick={() => wizard.next()}>Next</button>
+      <div class="flex justify-between w-full mt-6">
+        <button
+          class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+          onclick={() => wizard.prev()}
+        >
+          Prev
+        </button>
+
+        <button
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          onclick={() => wizard.next()}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  {/if}
+</div>
+
+
