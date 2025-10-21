@@ -15,6 +15,7 @@
 
   $inspect(wizard.currentState);
   let CurrentComponent = $derived(stepComponents.get(wizard.currentState?.constructor.name));
+  $inspect(CurrentComponent);
 </script>
 
 <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-10">
