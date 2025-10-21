@@ -21,7 +21,6 @@
   {#if CurrentComponent}
    <div class="w-full max-w-sm p-6 bg-white shadow-lg rounded-lg">
       <CurrentComponent state={wizard.currentState} />
-
       <div class="flex justify-between w-full mt-6">
         <button
           class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -40,6 +39,8 @@
         </button>
       </div>
     </div>
+  {:else}
+    <p>Loading...</p>
   {/if}
 </div>
 
