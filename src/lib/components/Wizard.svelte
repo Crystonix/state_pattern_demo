@@ -19,7 +19,7 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-10">
-  {#if CurrentComponent}
+  <!--{#if CurrentComponent} -->
    <div class="w-full max-w-sm p-6 bg-white shadow-lg rounded-lg">
       <CurrentComponent state={wizard.currentState} />
       <div class="flex justify-between w-full mt-6">
@@ -40,9 +40,9 @@
         </button>
       </div>
     </div>
-  {:else}
+  <!-- {:else}
     <p>Loading...</p>
-  {/if}
+  {/if} -->
 </div>
 
 
