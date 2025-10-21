@@ -9,4 +9,5 @@
 
   <label for="email">Email:</label>
   <input id="email" type="email" bind:value={state.data.email} placeholder="Email" class="border p-2 rounded" />
+  <p>Mail needs to have a @</p>
 </div>
