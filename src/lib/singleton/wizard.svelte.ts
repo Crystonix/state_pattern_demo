@@ -139,6 +139,7 @@ class WizardStore {
 
 	constructor(stepClasses: (new (context: WizardStore) => WizardState) []) {
 		this.steps = stepClasses.map(StepClass => new StepClass(this));
+    this.currentIndex = 0;
 	}
   get currentState() {
 		return this.steps[this.currentIndex]
