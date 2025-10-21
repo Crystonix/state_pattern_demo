@@ -133,34 +133,51 @@ export class ReviewState extends BaseWizardState<null> {
   display() {return 'Review Step'}
 }
 
-class WizardStore {
+export class WizardStore {
   steps = $state<WizardState[]>([]);
-	currentIndex = $state(0);
+  currentIndex = $state(0);
 
-	constructor(stepClasses: (new (context: WizardStore) => WizardState) []) {
-		this.steps = stepClasses.map(StepClass => new StepClass(this));
-    this.currentIndex = 0;
-	}
+  constructor(stepClasses: (new (context: WizardStore) => WizardState) []) {
+    // Ensure steps are initialized correctly
+    this.steps = stepClasses.map(StepClass => new StepClass(this));
+    this.currentIndex = 0; // Set to the first step by default
+  }
+
   get currentState() {
-		return this.steps[this.currentIndex]
-	}
+    return this.steps[this.currentIndex];
+  }
 
   set currentState(state: WizardState) {
     const index = this.steps.indexOf(state);
-    if (index !== -1) this.currentIndex = index;
-    else console.warn('[WizardStore] Tried to set unknown state');
+    if (index !== -1) {
+      this.currentIndex = index;
+    } else {
+      console.warn('[WizardStore] Tried to set unknown state');
+    }
   }
 
   set currentData(data: unknown) {
-    this.steps[this.currentIndex].data = data;
+    if (this.currentState) {
+      this.currentState.data = data;
+    } else {
+      console.warn('[WizardStore] No current state to set data on');
+    }
   }
 
-	next() {
-    if (this.currentIndex < this.steps.length - 1) this.currentIndex += 1;
+  next() {
+    if (this.currentIndex < this.steps.length - 1) {
+      this.currentIndex += 1;
+    } else {
+      console.warn('[WizardStore] Already at the last step');
+    }
   }
 
   prev() {
-    if (this.currentIndex > 0) this.currentIndex -= 1;
+    if (this.currentIndex > 0) {
+      this.currentIndex -= 1;
+    } else {
+      console.warn('[WizardStore] Already at the first step');
+    }
   }
 
   get isFirstStep() {
@@ -171,18 +188,19 @@ class WizardStore {
     return this.currentIndex === this.steps.length - 1;
   }
 
-	getAllData() {
-		return this.steps.reduce((acc, step) => {
-			if (step.data && typeof step.data === 'object') {
-				return { ...acc, ...step.data };
-			}
-			return acc;
-		}, {} as Record<string, unknown>);
-	}
+  getAllData() {
+    return this.steps.reduce((acc, step) => {
+      if (step.data && typeof step.data === 'object') {
+        return { ...acc, ...step.data };
+      }
+      return acc;
+    }, {} as Record<string, unknown>);
+  }
 }
 
+// Initialize the wizard with the steps
 export const wizard = new WizardStore([
-		UserInfoState,
-		PreferencesState,
-		ReviewState,
+  UserInfoState,
+  PreferencesState,
+  ReviewState,
 ]);
