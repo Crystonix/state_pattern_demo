@@ -1,0 +1,43 @@
+@startuml StatePattern
+' Top-to-bottom layout
+top to bottom direction
+
+skinparam class {
+  BackgroundColor<<Context>> LightBlue
+  BackgroundColor<<Abstract>> LightGreen
+  BackgroundColor<<State>> LightYellow
+  BackgroundColor<<Interface>> LightGray
+}
+
+' State interface
+interface State <<Interface>> {
+  +handle()
+}
+
+' Optional abstract base state (holds context reference)
+abstract class BaseState <<Abstract>> {
+  +handle()
+  -context : Context
+}
+
+' Concrete states
+class ConcreteStateA <<State>>
+class ConcreteStateB <<State>>
+
+' Context class
+class Context <<Context>> {
+  -state : State
+  +request()
+  +setState(State)
+}
+
+' Inheritance / Implementation
+State <|.. BaseState
+BaseState <|.. ConcreteStateA
+BaseState <|.. ConcreteStateB
+
+' Relationships
+BaseState --> Context : context
+Context --> State : currentState
+
+@enduml
